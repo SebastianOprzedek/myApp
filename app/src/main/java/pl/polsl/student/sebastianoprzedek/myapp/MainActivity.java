@@ -1,31 +1,29 @@
 package pl.polsl.student.sebastianoprzedek.myapp;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MAIN_DIR_PATH = "/storage/emulated/0/eye/Pupil Mobile/local_recording";
-    public static final String CAMERA_ID = "video_18eaccef";
     ImageView imageView;
+    ImageView imageView2;
     FrameService frameService;
+    FrameService frameService2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         imageView = (ImageView) findViewById(R.id.imageView);
+        imageView2 = (ImageView) findViewById(R.id.imageView2);
         Button connectButton = (Button) findViewById(R.id.connect);
         Button getFrameButton = (Button) findViewById(R.id.getFrame);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -42,7 +40,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void createFrameService() {
         try {
-            frameService = new FrameService(getFile(CAMERA_ID));
+            List<File> files = getFiles();
+            if(files.size() < 1) throw new Exception("no mjpeg files found in oldest folder in: "+ MAIN_DIR_PATH);
+            frameService = new FrameService(files.get(0));
+            if(files.size() > 1) frameService2 = new FrameService(files.get(1));
             toast("Service created successfully");
         }
         catch(Exception e){
@@ -54,10 +55,21 @@ public class MainActivity extends AppCompatActivity {
         try {
             Bitmap bmp = frameService.getFrame();
             imageView.setImageBitmap(bmp);
+            if(frameService2 != null) {
+                bmp = frameService2.getFrame();
+                imageView2.setImageBitmap(bmp);
+            }
         }
         catch(Exception e){
             handleException(e);
         }
+    }
+
+    private ArrayList<File> getFiles() throws Exception {
+        String dirPath = FileHelper.findOldestDir(MAIN_DIR_PATH);
+        if(dirPath == null) throw new Exception("directory not found in: "+ MAIN_DIR_PATH);
+        ArrayList<File> files = FileHelper.findFilesWithExtension(dirPath, "MJPEG");
+        return files;
     }
 
     private void handleException(Exception e) {
@@ -65,45 +77,7 @@ public class MainActivity extends AppCompatActivity {
         toast(e.getMessage());
     }
 
-    private File getFile(String cameraId) throws Exception {
-        String dirPath = findOldestDir(MAIN_DIR_PATH);
-        if(dirPath == null) throw new Exception("directory not found in: "+ MAIN_DIR_PATH);
-        String path = dirPath + "/" + cameraId + ".mjpeg";
-        checkPath(path);
-        return new File(path);
-    }
-
-    private String findOldestDir(String dir) { //compares using name in yyyymmdd... convention
-        ArrayList<String> dirNames = new ArrayList<>();
-        File mainDirectory = new File(dir);
-        File[] files = mainDirectory.listFiles();
-        for (File inFile : files) {
-            if (inFile.isDirectory()) {
-                dirNames.add(inFile.getName());
-            }
-        }
-        if(dirNames.size()==0) return null;
-        String oldestDir = dirNames.get(0);
-        for(int i=1; i< dirNames.size(); i++){
-            if(oldestDir.compareTo(dirNames.get(i)) < 0)
-                oldestDir = dirNames.get(i);
-        }
-        return dir + "/" + oldestDir;
-    }
-
-    private void checkPath(String name) throws Exception{
-        File file = new File(name);
-        if(file.exists()) {
-            if(!file.canRead()) {
-                throw new Exception("cannot read file: " + name);
-            }
-        }
-        else throw new Exception("file not exist: " + name);
-    }
-
-
     private void toast(String s){
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
     }
-
 }
