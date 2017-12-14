@@ -1,5 +1,7 @@
 package pl.polsl.student.sebastianoprzedek.myapp.net;
 
+import android.graphics.Bitmap;
+
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,11 +33,26 @@ public class ServerConnection {
         out = new DataOutputStream(socket.getOutputStream());
     }
 
+    public void close() throws Exception{
+        writeMessage(Dictionary.STOP);
+        in.close();
+        out.close();
+        socket.close();
+    }
+
     public void setName(String name) throws Exception{
         byte[] utf8Bytes = name.getBytes("UTF-8");
         writeMessage(Dictionary.NAME);
         writeInt(utf8Bytes.length);
         out.write(utf8Bytes);
+        waitForConfirmation();
+    }
+
+    public void writeFrame(Bitmap bitmap) throws Exception{
+        byte[] bitmapBytes = ByteHelper.bitmapToByteArray(bitmap);
+        writeMessage(Dictionary.JPEG_HEADER);
+        writeInt(bitmapBytes.length);
+        out.write(bitmapBytes);
         waitForConfirmation();
     }
 

@@ -9,6 +9,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import org.bytedeco.javacv.FrameFilter;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +82,13 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         stopRepeatingTask();
+        try{
+            serverConnection.close();
+            serverConnection2.close();
+        }
+        catch(Exception e){
+            handleException(e);
+        }
     }
 
     private void createFrameService() {
@@ -106,11 +116,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void setFrameFromService() {
         try {
-            Bitmap bmp = frameService.getFrame();
+            Bitmap bmp = frameService.getFrame(); //TODO: Optimization. Remove unnecessary conversion
             imageView.setImageBitmap(bmp);
+            if(serverConnection != null) serverConnection.writeFrame(bmp);
             if(frameService2 != null) {
                 bmp = frameService2.getFrame();
                 imageView2.setImageBitmap(bmp);
+                if(serverConnection2 != null) serverConnection2.writeFrame(bmp);
             }
         }
         catch(Exception e){

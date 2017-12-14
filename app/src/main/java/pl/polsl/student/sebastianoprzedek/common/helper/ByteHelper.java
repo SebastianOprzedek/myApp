@@ -1,5 +1,10 @@
 package pl.polsl.student.sebastianoprzedek.common.helper;
 
+import android.graphics.Bitmap;
+
+import java.io.ByteArrayOutputStream;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,5 +34,11 @@ public class ByteHelper {
                 (byte)(value >>> 16),
                 (byte)(value >>> 8),
                 (byte)value};
+    }
+
+    public static byte[] bitmapToByteArray(Bitmap bitmap){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        return stream.toByteArray();
     }
 }
