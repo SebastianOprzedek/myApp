@@ -2,6 +2,7 @@ package pl.polsl.student.sebastianoprzedek.myapp;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pl.polsl.student.sebastianoprzedek.common.helper.FileHelper;
+import pl.polsl.student.sebastianoprzedek.myapp.net.Client;
 import pl.polsl.student.sebastianoprzedek.myapp.service.FrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MJPEGFrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MP4FrameService;
@@ -29,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        disableStrictPolicy();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         imageView = (ImageView) findViewById(R.id.imageView);
@@ -42,9 +46,15 @@ public class MainActivity extends AppCompatActivity {
         });
         getFrameButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                setFrameFromService();
+                new Client().test();
+//                setFrameFromService();
             }
         });
+    }
+
+    private void disableStrictPolicy() {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     @Override
