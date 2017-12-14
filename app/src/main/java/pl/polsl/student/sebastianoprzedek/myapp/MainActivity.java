@@ -1,6 +1,7 @@
 package pl.polsl.student.sebastianoprzedek.myapp;
 
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,10 +14,13 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MAIN_DIR_PATH = "/storage/emulated/0/eye/Pupil Mobile/local_recording";
+    public static final int PERIOD = 1000;
     ImageView imageView;
     ImageView imageView2;
     FrameService frameService;
     FrameService frameService2;
+    private int mInterval = PERIOD;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +42,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopRepeatingTask();
+    }
+
     private void createFrameService() {
         try {
             List<File> files = getFiles();
@@ -49,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
         catch(Exception e){
             handleException(e);
         }
+        mHandler = new Handler();
+        startRepeatingTask();
     }
 
     private void setFrameFromService() {
@@ -80,4 +92,24 @@ public class MainActivity extends AppCompatActivity {
     private void toast(String s){
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
     }
+
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                setFrameFromService();
+            } finally {
+                mHandler.postDelayed(mStatusChecker, mInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask() {
+        mStatusChecker.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+    }
+
 }
