@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pl.polsl.student.sebastianoprzedek.common.helper.FileHelper;
-import pl.polsl.student.sebastianoprzedek.myapp.net.Client;
+import pl.polsl.student.sebastianoprzedek.myapp.net.ServerConnection;
 import pl.polsl.student.sebastianoprzedek.myapp.service.FrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MJPEGFrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MP4FrameService;
@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     FrameService frameService2;
     private int mInterval = PERIOD;
     private Handler mHandler;
+    ServerConnection serverConnection;
+    ServerConnection serverConnection2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,19 +39,35 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         imageView = (ImageView) findViewById(R.id.imageView);
         imageView2 = (ImageView) findViewById(R.id.imageView2);
+        Button openButton = (Button) findViewById(R.id.open);
         Button connectButton = (Button) findViewById(R.id.connect);
         Button getFrameButton = (Button) findViewById(R.id.getFrame);
-        connectButton.setOnClickListener(new View.OnClickListener() {
+        openButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 createFrameService();
             }
         });
         getFrameButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                new Client().test();
-//                setFrameFromService();
+                setFrameFromService();
             }
         });
+        connectButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                initServerConnections();
+            }
+        });
+    }
+
+    private void initServerConnections() {
+        try {
+            if (frameService != null)
+                serverConnection = new ServerConnection(frameService.getFileName());
+            if (frameService2 != null)
+                serverConnection2 = new ServerConnection(frameService2.getFileName());
+        }catch (Exception e){
+            handleException(e);
+        }
     }
 
     private void disableStrictPolicy() {

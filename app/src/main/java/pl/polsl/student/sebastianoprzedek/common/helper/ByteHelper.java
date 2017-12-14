@@ -22,4 +22,12 @@ public class ByteHelper {
             if(bytes1[i] != bytes2[i]) return false;
         return true;
     }
+
+    public static byte[] intToByteArray(int value) {
+        return new byte[] {
+                (byte)(value >>> 24),
+                (byte)(value >>> 16),
+                (byte)(value >>> 8),
+                (byte)value};
+    }
 }

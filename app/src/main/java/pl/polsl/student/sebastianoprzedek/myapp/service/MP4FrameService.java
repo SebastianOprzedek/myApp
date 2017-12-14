@@ -29,4 +29,7 @@ public class MP4FrameService implements FrameService {
         return new AndroidFrameConverter().convert(g.grabImage());
     }
 
+    public String getFileName(){
+        return file.getName();
+    }
 }
