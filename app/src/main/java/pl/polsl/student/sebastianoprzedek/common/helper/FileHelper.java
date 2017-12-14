@@ -46,7 +46,7 @@ public class FileHelper {
     public static List<File> filterNotContainsSubstring(String substring, ArrayList<File> files) {
         List<File> result = new ArrayList<>();
         for(int i=0; i<files.size(); i++)
-            if(files.get(i).getName().contains(substring))
+            if(!files.get(i).getName().contains(substring))
                 result.add(files.get(i));
         return result;
     }
