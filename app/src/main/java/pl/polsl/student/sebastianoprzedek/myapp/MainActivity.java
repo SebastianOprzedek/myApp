@@ -12,6 +12,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import pl.polsl.student.sebastianoprzedek.common.helper.FileHelper;
+import pl.polsl.student.sebastianoprzedek.myapp.service.FrameService;
+import pl.polsl.student.sebastianoprzedek.myapp.service.MJPEGFrameService;
+import pl.polsl.student.sebastianoprzedek.myapp.service.MP4FrameService;
+
 public class MainActivity extends AppCompatActivity {
     public static final String MAIN_DIR_PATH = "/storage/emulated/0/eye/Pupil Mobile/local_recording";
     public static final int PERIOD = 1000;
@@ -51,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private void createFrameService() {
         try {
             List<File> files = getFiles();
-            if(files.size() < 1) throw new Exception("no mjpeg files found in oldest folder in: "+ MAIN_DIR_PATH);
-            frameService = new FrameService(files.get(0));
-            if(files.size() > 1) frameService2 = new FrameService(files.get(1));
+            if(files.size() < 1) throw new Exception("no valid found in oldest folder in: "+ MAIN_DIR_PATH);
+            frameService = dispatchService(files.get(0));
+            if(files.size() > 1) frameService2 = new MJPEGFrameService(files.get(1));
             toast("Service created successfully");
         }
         catch(Exception e){
@@ -61,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
         }
         mHandler = new Handler();
         startRepeatingTask();
+    }
+
+    private FrameService dispatchService(File file) throws Exception{
+        if(FileHelper.getExtension(file).equals("MJPEG"))
+            return new MJPEGFrameService(file);
+        else if(FileHelper.getExtension(file).equals("MP4"))
+            return new MP4FrameService(file);
+        return null;
     }
 
     private void setFrameFromService() {
@@ -77,11 +90,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private ArrayList<File> getFiles() throws Exception {
+    private List<File> getFiles() throws Exception {
         String dirPath = FileHelper.findOldestDir(MAIN_DIR_PATH);
         if(dirPath == null) throw new Exception("directory not found in: "+ MAIN_DIR_PATH);
         ArrayList<File> files = FileHelper.findFilesWithExtension(dirPath, "MJPEG");
-        return files;
+        files.addAll(FileHelper.filterNotContainsSubstring("audio", FileHelper.findFilesWithExtension(dirPath, "MP4")));
+        return FileHelper.filterNotEmpty(files);
     }
 
     private void handleException(Exception e) {
