@@ -1,4 +1,4 @@
-package pl.polsl.student.sebastianoprzedek.myapp;
+package pl.polsl.student.sebastianoprzedek.myapp.service;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,16 +9,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
+
 /**
  * Created by sebas on 13.12.2017.
  */
 
-public class FrameService {
+public class MJPEGFrameService implements FrameService {
     public static final byte[] JPG_HEADER = {(byte) -1 ,(byte) -40 ,(byte) -1 ,(byte) -32};
 
     BufferedInputStream bufferedReader;
 
-    public FrameService(File file) throws Exception {
+    public MJPEGFrameService(File file) throws Exception {
         FileInputStream fileReader = new FileInputStream(file);
         bufferedReader = new BufferedInputStream(fileReader);
         testService(file.getName());

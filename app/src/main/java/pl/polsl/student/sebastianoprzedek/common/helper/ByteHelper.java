@@ -1,4 +1,4 @@
-package pl.polsl.student.sebastianoprzedek.myapp;
+package pl.polsl.student.sebastianoprzedek.common.helper;
 
 import java.util.ArrayList;
 import java.util.List;
