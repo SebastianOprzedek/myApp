@@ -9,13 +9,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import org.bytedeco.javacv.FrameFilter;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import pl.polsl.student.sebastianoprzedek.common.helper.FileHelper;
 import pl.polsl.student.sebastianoprzedek.myapp.net.ServerConnection;
 import pl.polsl.student.sebastianoprzedek.myapp.service.FrameService;
@@ -24,7 +20,7 @@ import pl.polsl.student.sebastianoprzedek.myapp.service.MP4FrameService;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MAIN_DIR_PATH = "/storage/emulated/0/eye/Pupil Mobile/local_recording";
-    public static final int PERIOD = 1000;
+    public static final int PERIOD = 2000;
     ImageView imageView;
     ImageView imageView2;
     FrameService frameService;

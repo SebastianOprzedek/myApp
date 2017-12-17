@@ -1,7 +1,6 @@
 package pl.polsl.student.sebastianoprzedek.myapp.net;
 
 import android.graphics.Bitmap;
-
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -49,11 +48,14 @@ public class ServerConnection {
     }
 
     public void writeFrame(Bitmap bitmap) throws Exception{
-        byte[] bitmapBytes = ByteHelper.bitmapToByteArray(bitmap);
+        byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.bitmapToByteArray(bitmap), 1000);
         writeMessage(Dictionary.JPEG_HEADER);
-        writeInt(bitmapBytes.length);
-        out.write(bitmapBytes);
-        waitForConfirmation();
+        writeInt(batchedBytes.length);
+        for(int i=0; i< batchedBytes.length; i++) {
+            writeInt(batchedBytes[i].length);
+            out.write(batchedBytes[i]);
+            waitForConfirmation();
+        }
     }
 
     private void writeInt(int number) throws Exception{
