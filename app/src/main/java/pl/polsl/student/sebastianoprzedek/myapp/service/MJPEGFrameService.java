@@ -16,20 +16,22 @@ import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
  */
 
 public class MJPEGFrameService implements FrameService {
-    public static final byte[] JPG_HEADER = {(byte) -1 ,(byte) -40 ,(byte) -1 ,(byte) -32};
+    public static final byte[] JPEG_HEADER = {(byte) -1 ,(byte) -40 ,(byte) -1 ,(byte) -32};
 
     BufferedInputStream bufferedReader;
+    File file;
 
     public MJPEGFrameService(File file) throws Exception {
         FileInputStream fileReader = new FileInputStream(file);
         bufferedReader = new BufferedInputStream(fileReader);
         testService(file.getName());
+        this.file = file;
     }
 
     private void testService(String fileName) throws Exception{
         byte[] byteArray = new byte[4];
         bufferedReader.read(byteArray, 0, 4);
-        if(!ByteHelper.equal(byteArray, JPG_HEADER)) {
+        if(!ByteHelper.equal(byteArray, JPEG_HEADER)) {
             closeService();
             throw new Exception("Error during creation frame service from file: " + fileName);
         }
@@ -41,12 +43,12 @@ public class MJPEGFrameService implements FrameService {
 
     public byte[] getFrameBytes() throws Exception{
         ArrayList<Byte> bytes = new ArrayList<>();
-        bytes.addAll(ByteHelper.byteArrayToList(JPG_HEADER));
+        bytes.addAll(ByteHelper.byteArrayToList(JPEG_HEADER));
 
         while(true){
             byte[] byteArray = new byte[4];
             bufferedReader.read(byteArray, 0, 4);
-            if(ByteHelper.equal(byteArray, JPG_HEADER)){
+            if(ByteHelper.equal(byteArray, JPEG_HEADER)){
                 break;
             }
             else{
@@ -63,5 +65,9 @@ public class MJPEGFrameService implements FrameService {
     public Bitmap getFrame() throws Exception {
         byte[] bytes = getFrameBytes();
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
+
+    public String getFileName(){
+        return file.getName();
     }
 }
