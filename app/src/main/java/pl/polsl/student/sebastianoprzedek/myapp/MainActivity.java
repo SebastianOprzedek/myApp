@@ -7,7 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
@@ -20,15 +21,20 @@ import pl.polsl.student.sebastianoprzedek.myapp.service.MP4FrameService;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MAIN_DIR_PATH = "/storage/emulated/0/eye/Pupil Mobile/local_recording";
-    public static final int PERIOD = 2000;
-    ImageView imageView;
-    ImageView imageView2;
+    public static final String DEFAULT_INTERVAL = "2000";
+    public static final String DEFAULT_HOST = "192.168.1.68";
+    public static final String DEFAULT_PORT = "4444";
     FrameService frameService;
     FrameService frameService2;
-    private int mInterval = PERIOD;
+    private int mInterval = Integer.parseInt(DEFAULT_INTERVAL);
     private Handler mHandler;
     ServerConnection serverConnection;
     ServerConnection serverConnection2;
+    EditText hostEditText;
+    EditText portEditText;
+    EditText intervalEditText;
+    Boolean running = false;
+    Button startButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,34 +42,52 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        imageView = (ImageView) findViewById(R.id.imageView);
-        imageView2 = (ImageView) findViewById(R.id.imageView2);
-        Button openButton = (Button) findViewById(R.id.open);
-        Button connectButton = (Button) findViewById(R.id.connect);
-        Button getFrameButton = (Button) findViewById(R.id.getFrame);
-        openButton.setOnClickListener(new View.OnClickListener() {
+        Button previewButton = (Button) findViewById(R.id.preview);
+        startButton = (Button) findViewById(R.id.start);
+        Button changeDirButton = (Button) findViewById(R.id.change);
+        TextView diretoryTextView = (TextView) findViewById(R.id.directory);
+        hostEditText = (EditText) findViewById(R.id.host);
+        portEditText = (EditText) findViewById(R.id.port);
+        intervalEditText = (EditText) findViewById(R.id.interval);
+        hostEditText.setText(DEFAULT_HOST, TextView.BufferType.EDITABLE);
+        portEditText.setText(DEFAULT_PORT, TextView.BufferType.EDITABLE);
+        intervalEditText.setText(DEFAULT_INTERVAL, TextView.BufferType.EDITABLE);
+        diretoryTextView.setText(FileHelper.findOldestDir(MAIN_DIR_PATH));
+        startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                createFrameService();
-            }
-        });
-        getFrameButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setFrameFromService();
-            }
-        });
-        connectButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                initServerConnections();
+                startOrStopService();
             }
         });
     }
 
-    private void initServerConnections() {
+    private void startOrStopService() {
+        try {
+            if(!running) {
+                createFrameService(Integer.parseInt(portEditText.getText().toString()));
+                initServerConnections(hostEditText.getText().toString(), Integer.parseInt(portEditText.getText().toString()));
+                startButton.setText("STOP");
+            }
+            else{
+                startButton.setText("START");
+                stopRepeatingTask();
+                if (serverConnection != null) serverConnection.close();
+                if (serverConnection2 != null) serverConnection2.close();
+                if (frameService != null) frameService.closeService();
+                if (frameService2 != null) frameService2.closeService();
+            }
+            running = !running;
+        }
+        catch (Exception e){
+            handleException(e);
+        }
+    }
+
+    private void initServerConnections(String host, int port) {
         try {
             if (frameService != null)
-                serverConnection = new ServerConnection(frameService.getFileName());
+                serverConnection = new ServerConnection(host, port, frameService.getFileName());
             if (frameService2 != null)
-                serverConnection2 = new ServerConnection(frameService2.getFileName());
+                serverConnection2 = new ServerConnection(host, port, frameService2.getFileName());
         }catch (Exception e){
             handleException(e);
         }
@@ -87,8 +111,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void createFrameService() {
+    private void createFrameService(int interval) {
         try {
+            mInterval = interval;
             List<File> files = getFiles();
             if(files.size() < 1) throw new Exception("no valid found in oldest folder in: "+ MAIN_DIR_PATH);
             frameService = dispatchService(files.get(0));
@@ -110,19 +135,14 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    private void setFrameFromService() {
-        try {
-            Bitmap bmp = frameService.getFrame(); //TODO: Optimization. Remove unnecessary conversion
-            imageView.setImageBitmap(bmp);
-            if(serverConnection != null) serverConnection.writeFrame(bmp);
-            if(frameService2 != null) {
-                bmp = frameService2.getFrame();
-                imageView2.setImageBitmap(bmp);
-                if(serverConnection2 != null) serverConnection2.writeFrame(bmp);
-            }
-        }
-        catch(Exception e){
-            handleException(e);
+    private void setFrameFromService() throws Exception{
+        Bitmap bmp = frameService.getFrame(); //TODO: Optimization. Remove unnecessary conversion
+//            imageView.setImageBitmap(bmp);
+        if(serverConnection != null) serverConnection.writeFrame(bmp);
+        if(frameService2 != null) {
+            bmp = frameService2.getFrame();
+//                imageView2.setImageBitmap(bmp);
+            if(serverConnection2 != null) serverConnection2.writeFrame(bmp);
         }
     }
 
@@ -148,7 +168,12 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             try {
                 setFrameFromService();
-            } finally {
+            }
+            catch (Exception e){
+                handleException(e);
+                stopRepeatingTask();
+            }
+            finally {
                 mHandler.postDelayed(mStatusChecker, mInterval);
             }
         }

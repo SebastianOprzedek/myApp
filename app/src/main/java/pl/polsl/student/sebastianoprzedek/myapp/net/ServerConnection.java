@@ -6,28 +6,25 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
-import pl.polsl.student.sebastianoprzedek.myapp.Dictionary;
 
 /**
  * Created by Sebastian Oprzędek on 14.12.2017.
  */
 
 public class ServerConnection {
-    public static final String HOST = "192.168.1.68";
-    public static final int PORT = 4444;
 
     Socket socket;
     protected BufferedInputStream in;
     protected DataOutputStream out;
 
-    public ServerConnection(String name) throws Exception {
-        establish();
+    public ServerConnection(String host, int port, String name) throws Exception {
+        establish(host, port);
         setName(name);
         waitForConfirmation();
     }
 
-    public void establish() throws Exception {
-        socket = new Socket(HOST, PORT);
+    public void establish(String host, int port) throws Exception {
+        socket = new Socket(host, port);
         in = new BufferedInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
     }

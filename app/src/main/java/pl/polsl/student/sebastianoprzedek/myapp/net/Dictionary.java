@@ -1,4 +1,4 @@
-package pl.polsl.student.sebastianoprzedek.myapp;
+package pl.polsl.student.sebastianoprzedek.myapp.net;
 
 /**
  * Created by Sebastian Oprzędek on 14.12.2017.
