@@ -89,7 +89,6 @@
             android:layout_gravity="center_vertical|center_horizontal"
             android:layout_row="4"
             android:scaleType="fitXY"
-            app:srcCompat="@mipmap/ic_launcher"
             tools:layout_editor_absoluteX="16dp"
             tools:layout_editor_absoluteY="16dp" />
 
@@ -101,7 +100,6 @@
             android:layout_gravity="center_vertical|center_horizontal"
             android:layout_row="5"
             android:scaleType="fitXY"
-            app:srcCompat="@mipmap/ic_launcher"
             tools:layout_editor_absoluteX="16dp"
             tools:layout_editor_absoluteY="16dp" />
 
