@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
@@ -18,12 +19,15 @@ import pl.polsl.student.sebastianoprzedek.myapp.net.ServerConnection;
 import pl.polsl.student.sebastianoprzedek.myapp.service.FrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MJPEGFrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MP4FrameService;
+import pl.polsl.student.sebastianoprzedek.myapp.service.VideoCaptureService;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MAIN_DIR_PATH = "/storage/emulated/0/eye/Pupil Mobile/local_recording";
     public static final String DEFAULT_INTERVAL = "2000";
     public static final String DEFAULT_HOST = "192.168.1.68";
     public static final String DEFAULT_PORT = "4444";
+    ImageView imageView;
+    ImageView imageView2;
     FrameService frameService;
     FrameService frameService2;
     private int mInterval = Integer.parseInt(DEFAULT_INTERVAL);
@@ -42,7 +46,8 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Button previewButton = (Button) findViewById(R.id.preview);
+        imageView = (ImageView) findViewById(R.id.imageView);
+        imageView2 = (ImageView) findViewById(R.id.imageView2);
         startButton = (Button) findViewById(R.id.start);
         Button changeDirButton = (Button) findViewById(R.id.change);
         TextView diretoryTextView = (TextView) findViewById(R.id.directory);
@@ -137,11 +142,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void setFrameFromService() throws Exception{
         Bitmap bmp = frameService.getFrame(); //TODO: Optimization. Remove unnecessary conversion
-//            imageView.setImageBitmap(bmp);
+            imageView.setImageBitmap(bmp);
         if(serverConnection != null) serverConnection.writeFrame(bmp);
         if(frameService2 != null) {
             bmp = frameService2.getFrame();
-//                imageView2.setImageBitmap(bmp);
+                imageView2.setImageBitmap(bmp);
             if(serverConnection2 != null) serverConnection2.writeFrame(bmp);
         }
     }
