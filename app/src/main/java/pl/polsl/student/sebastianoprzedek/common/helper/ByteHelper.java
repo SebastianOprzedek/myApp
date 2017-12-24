@@ -50,13 +50,11 @@ public class ByteHelper {
         byte[][] batchedBytes = new byte[numberOfBatches][];
         for(int i = 0; i < numberOfBatches-1; i++){
             batchedBytes[i] = new byte[batchSize];
-            for(int j=0; j<batchSize; j++)
-                batchedBytes[i][j] = bytes[i*batchSize+j];
+            System.arraycopy(bytes, i * batchSize, batchedBytes[i], 0, batchSize);
         }
         int lastBatchSize = bytes.length - (numberOfBatches-1) * batchSize;
         batchedBytes[numberOfBatches-1] = new byte[lastBatchSize];
-        for(int j=0; j<lastBatchSize; j++)
-            batchedBytes[numberOfBatches-1][j] = bytes[(numberOfBatches-1)*batchSize+j];
+        System.arraycopy(bytes, (numberOfBatches - 1) * batchSize, batchedBytes[numberOfBatches - 1], 0, lastBatchSize);
         return batchedBytes;
     }
 

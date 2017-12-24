@@ -45,7 +45,7 @@ public class ServerConnection {
     }
 
     public void writeFrame(Bitmap bitmap) throws Exception{
-        byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.bitmapToByteArray(bitmap), 1000);
+        byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.bitmapToByteArray(bitmap), 10000);
         writeMessage(Dictionary.JPEG_HEADER);
         writeInt(batchedBytes.length);
         for(int i=0; i< batchedBytes.length; i++) {
