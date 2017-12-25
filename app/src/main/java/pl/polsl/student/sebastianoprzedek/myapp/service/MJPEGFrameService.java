@@ -2,13 +2,11 @@ package pl.polsl.student.sebastianoprzedek.myapp.service;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
 
 /**

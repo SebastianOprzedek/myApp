@@ -5,6 +5,7 @@ import org.bytedeco.javacv.AndroidFrameConverter;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import java.io.File;
 import java.io.IOException;
+import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
 
 /**
  * Created by sebas on 14.12.2017.
@@ -23,6 +24,10 @@ public class MP4FrameService implements FrameService {
 
     public void closeService() throws IOException{
         g.stop();
+    }
+
+    public byte[] getFrameBytes() throws Exception{
+        return ByteHelper.bitmapToByteArray(getFrame());
     }
 
     public Bitmap getFrame() throws Exception{

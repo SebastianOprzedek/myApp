@@ -10,6 +10,7 @@ import java.io.IOException;
 public interface FrameService {
 
     public Bitmap getFrame() throws Exception;
+    public byte[] getFrameBytes() throws Exception;
     public void closeService() throws IOException;
     public String getFileName();
 }

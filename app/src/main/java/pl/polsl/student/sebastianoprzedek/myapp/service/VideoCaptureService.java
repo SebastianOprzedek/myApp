@@ -8,6 +8,7 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import java.io.File;
 import java.io.IOException;
+import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
 
 /**
  * Created by Sebastian Oprzędek on 18.12.2017.
@@ -31,6 +32,10 @@ public class VideoCaptureService implements FrameService {
         videoCapture.read(image);
         Frame frame = new OpenCVFrameConverter.ToMat().convert(image);
         return new AndroidFrameConverter().convert(frame);
+    }
+
+    public byte[] getFrameBytes() throws Exception{
+        return ByteHelper.bitmapToByteArray(getFrame());
     }
 
     public String getFileName(){

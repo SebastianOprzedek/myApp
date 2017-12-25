@@ -1,15 +1,11 @@
 package pl.polsl.student.sebastianoprzedek.myapp;
 
-import android.graphics.Bitmap;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
@@ -20,27 +16,21 @@ import pl.polsl.student.sebastianoprzedek.myapp.net.ServerConnection;
 import pl.polsl.student.sebastianoprzedek.myapp.service.FrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MJPEGFrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MP4FrameService;
-import pl.polsl.student.sebastianoprzedek.myapp.service.VideoCaptureService;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MAIN_DIR_PATH = "/storage/emulated/0/eye/Pupil Mobile/local_recording";
     public static final String DEFAULT_INTERVAL = "2000";
     public static final String DEFAULT_HOST = "192.168.1.68";
     public static final String DEFAULT_PORT = "4444";
-    ImageView imageView;
-    ImageView imageView2;
     FrameService frameService;
     FrameService frameService2;
     ServerConnection serverConnection;
-    ServerConnection serverConnection2;
     EditText hostEditText;
     EditText portEditText;
+    TextView logger;
     Boolean running = false;
-    Boolean preview = false;
     Thread captureThread;
     Button startButton;
-    Switch sendSwitch;
-    Switch previewSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,18 +38,14 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        imageView = (ImageView) findViewById(R.id.imageView);
-        imageView2 = (ImageView) findViewById(R.id.imageView2);
         startButton = (Button) findViewById(R.id.start);
-        Button changeDirButton = (Button) findViewById(R.id.change);
-        TextView diretoryTextView = (TextView) findViewById(R.id.directory);
+        TextView directoryTextView = (TextView) findViewById(R.id.directory);
+        logger = (TextView) findViewById(R.id.logger);
         hostEditText = (EditText) findViewById(R.id.host);
         portEditText = (EditText) findViewById(R.id.port);
         hostEditText.setText(DEFAULT_HOST, TextView.BufferType.EDITABLE);
         portEditText.setText(DEFAULT_PORT, TextView.BufferType.EDITABLE);
-        previewSwitch = (Switch) findViewById(R.id.switchPreview);
-        sendSwitch = (Switch) findViewById(R.id.switchSend);
-        diretoryTextView.setText(FileHelper.findOldestDir(MAIN_DIR_PATH));
+        directoryTextView.setText(FileHelper.findOldestDir(MAIN_DIR_PATH));
         startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startOrStopService();
@@ -70,20 +56,15 @@ public class MainActivity extends AppCompatActivity {
     private void startOrStopService() {
         try {
             if(!running) {
-                if(previewSwitch.isChecked() || sendSwitch.isChecked()) {
-                    running = true;
-                    preview = previewSwitch.isChecked();
-                    createFrameService(Integer.parseInt(portEditText.getText().toString()));
-                    if (sendSwitch.isChecked())
-                        initServerConnections(hostEditText.getText().toString(), Integer.parseInt(portEditText.getText().toString()));
-                    startButton.setText("STOP");
-                }
+                running = true;
+                createFrameService();
+                initServerConnections(hostEditText.getText().toString(), Integer.parseInt(portEditText.getText().toString()));
+                startButton.setText("STOP");
             }
             else{
                 running = false;
                 startButton.setText("START");
                 if (serverConnection != null) serverConnection.close();
-                if (serverConnection2 != null) serverConnection2.close();
                 if (frameService != null) frameService.closeService();
                 if (frameService2 != null) frameService2.closeService();
             }
@@ -97,8 +78,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             if (frameService != null)
                 serverConnection = new ServerConnection(host, port, frameService.getFileName());
-            if (frameService2 != null)
-                serverConnection2 = new ServerConnection(host, port, frameService2.getFileName());
         }catch (Exception e){
             handleException(e);
         }
@@ -114,20 +93,18 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         try{
             serverConnection.close();
-            serverConnection2.close();
         }
         catch(Exception e){
             handleException(e);
         }
     }
 
-    private void createFrameService(int interval) {
+    private void createFrameService() {
         try {
             List<File> files = getFiles();
             if(files.size() < 1) throw new Exception("no valid found in oldest folder in: "+ MAIN_DIR_PATH);
             frameService = dispatchService(files.get(0));
-            if(files.size() > 1) frameService2 = new MJPEGFrameService(files.get(1));
-            toast("Service created successfully");
+            if(files.size() > 1) frameService2 = dispatchService(files.get(1));
         }
         catch(Exception e){
             handleException(e);
@@ -136,21 +113,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private FrameService dispatchService(File file) throws Exception{
-        if(FileHelper.getExtension(file).equals("MJPEG"))
+        if(FileHelper.getExtension(file).equals("MJPEG")) {
+            log("Frame service created successfully");
             return new MJPEGFrameService(file);
-        else if(FileHelper.getExtension(file).equals("MP4"))
+        }
+        else if(FileHelper.getExtension(file).equals("MP4")) {
+            log("Frame service created successfully");
             return new MP4FrameService(file);
+        }
         return null;
     }
 
-    private void setFrameFromService() throws Exception{
-        Bitmap bmp = frameService.getFrame(); //TODO: Optimization. Remove unnecessary conversion
-            if(preview) imageView.setImageBitmap(bmp);
-        if(serverConnection != null) serverConnection.writeFrame(bmp);
-        if(frameService2 != null) {
-            bmp = frameService2.getFrame();
-            if(preview) imageView2.setImageBitmap(bmp);
-            if(serverConnection2 != null) serverConnection2.writeFrame(bmp);
+    private void sendFrameFromService() throws Exception{
+        if(serverConnection != null) {
+            if (frameService != null) {
+                serverConnection.writeFrame(frameService.getFrameBytes());
+                log("frame was sent from frame service 1");
+            }
+            if (frameService2 != null){
+                serverConnection.writeFrame(frameService2.getFrameBytes());
+                log("frame was sent from frame service 2");
+            }
         }
     }
 
@@ -164,7 +147,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleException(Exception e) {
         e.printStackTrace();
-        toast(e.getMessage());
+        log(e.getMessage());
+    }
+
+    private void log(String message) {
+        String s = logger.getText().toString();
+        logger.setText(message + "\r\n" + s.substring(0, Math.min(s.length(), 1024)));
     }
 
     private void toast(String s){
@@ -176,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             while (running) {
                 try {
-                    setFrameFromService();
+                    sendFrameFromService();
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -188,5 +176,6 @@ public class MainActivity extends AppCompatActivity {
     void startRepeatingTask() {
         captureThread = new Thread(new CaptureThread());
         captureThread.start();
+        log("Starting new thread for frames");
     }
 }

@@ -1,13 +1,10 @@
 package pl.polsl.student.sebastianoprzedek.myapp.net;
 
-import android.graphics.Bitmap;
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.Files;
-
 import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
 
 /**
@@ -47,8 +44,8 @@ public class ServerConnection {
         waitForConfirmation();
     }
 
-    public void writeFrame(Bitmap bitmap) throws Exception{
-        byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.bitmapToByteArray(bitmap), 10000);
+    public void writeFrame(byte[] frameBytes) throws Exception{
+        byte[][] batchedBytes = ByteHelper.splitToBatches(frameBytes, 10000);
         writeMessage(Dictionary.JPEG_HEADER);
         writeInt(batchedBytes.length);
         for (byte[] batchedByte : batchedBytes) writeByteArray(batchedByte);
