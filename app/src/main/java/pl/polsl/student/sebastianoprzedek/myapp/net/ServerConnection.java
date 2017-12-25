@@ -3,8 +3,11 @@ package pl.polsl.student.sebastianoprzedek.myapp.net;
 import android.graphics.Bitmap;
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+
 import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
 
 /**
@@ -20,7 +23,7 @@ public class ServerConnection {
     public ServerConnection(String host, int port, String name) throws Exception {
         establish(host, port);
         setName(name);
-        waitForConfirmation();
+        //writeFile(new File("/storage/emulated/0/eye/aa.avi"));
     }
 
     public void establish(String host, int port) throws Exception {
@@ -48,11 +51,20 @@ public class ServerConnection {
         byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.bitmapToByteArray(bitmap), 10000);
         writeMessage(Dictionary.JPEG_HEADER);
         writeInt(batchedBytes.length);
-        for(int i=0; i< batchedBytes.length; i++) {
-            writeInt(batchedBytes[i].length);
-            out.write(batchedBytes[i]);
-            waitForConfirmation();
-        }
+        for (byte[] batchedByte : batchedBytes) writeByteArray(batchedByte);
+    }
+
+    public void writeFile(File file) throws Exception{
+        byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.fileToByteArray(file), 10000);
+        writeMessage(Dictionary.FILE_HEADER);
+        writeInt(batchedBytes.length);
+        for (byte[] batchedByte : batchedBytes) writeByteArray(batchedByte);
+    }
+
+    private void writeByteArray(byte[] bytes) throws Exception{
+        writeInt(bytes.length);
+        out.write(bytes);
+        waitForConfirmation();
     }
 
     private void writeInt(int number) throws Exception{

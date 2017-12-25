@@ -3,6 +3,10 @@ package pl.polsl.student.sebastianoprzedek.common.helper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +15,7 @@ import java.util.List;
  */
 
 public class ByteHelper {
+    public static final int MAX_FILE_SIZE = 999999999;
     public static List<Byte> byteArrayToList(byte[] bytes){
         List<Byte> byteList = new ArrayList<>();
         for(int i=0; i<bytes.length; i++){
@@ -69,5 +74,35 @@ public class ByteHelper {
         for (Byte e : bytes)
             ret[i++] = e.byteValue();
         return ret;
+    }
+
+    public static byte[] fileToByteArray(File file) throws Exception {
+        if (file.length() > MAX_FILE_SIZE) {
+            throw new Exception("File too big: " + file.getName());
+        }
+        ByteArrayOutputStream ous = null;
+        InputStream ios = null;
+        try {
+            byte[] buffer = new byte[4096];
+            ous = new ByteArrayOutputStream();
+            ios = new FileInputStream(file);
+            int read = 0;
+            while ((read = ios.read(buffer)) != -1) {
+                ous.write(buffer, 0, read);
+            }
+        }finally {
+            try {
+                if (ous != null)
+                    ous.close();
+            } catch (IOException e) {
+            }
+
+            try {
+                if (ios != null)
+                    ios.close();
+            } catch (IOException e) {
+            }
+        }
+        return ous.toByteArray();
     }
 }
