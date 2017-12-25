@@ -12,6 +12,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import pl.polsl.student.sebastianoprzedek.common.helper.FileHelper;
+import pl.polsl.student.sebastianoprzedek.common.helper.exceptions.FileTooBigException;
 import pl.polsl.student.sebastianoprzedek.myapp.net.ServerConnection;
 import pl.polsl.student.sebastianoprzedek.myapp.service.FrameService;
 import pl.polsl.student.sebastianoprzedek.myapp.service.MJPEGFrameService;
@@ -24,7 +25,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String DEFAULT_PORT = "4444";
     FrameService frameService;
     FrameService frameService2;
-    ServerConnection serverConnection;
+    ServerConnection framesServerConnection;
+    ServerConnection filesServerConnection;
     EditText hostEditText;
     EditText portEditText;
     TextView logger;
@@ -35,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         disableStrictPolicy();
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startButton = (Button) findViewById(R.id.start);
@@ -57,16 +58,17 @@ public class MainActivity extends AppCompatActivity {
         try {
             if(!running) {
                 running = true;
-                createFrameService();
-                initServerConnections(hostEditText.getText().toString(), Integer.parseInt(portEditText.getText().toString()));
+                if(createFrameService()) framesServerConnection = initServerConnection();
                 startButton.setText("STOP");
             }
             else{
+                captureThread.interrupt();
                 running = false;
                 startButton.setText("START");
-                if (serverConnection != null) serverConnection.close();
+                if (framesServerConnection != null) framesServerConnection.close();
                 if (frameService != null) frameService.closeService();
                 if (frameService2 != null) frameService2.closeService();
+                sendFiles();
             }
         }
         catch (Exception e){
@@ -74,13 +76,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initServerConnections(String host, int port) {
+    private void sendFiles() throws Exception {
+        filesServerConnection = initServerConnection();
+        List<File> files = getFiles();
+        if(files.size() < 1) throw new Exception("no valid found in oldest folder in: "+ MAIN_DIR_PATH);
+        sendFile(files.get(0));
+        if(files.size() > 1) sendFile(files.get(1));
+        if (filesServerConnection != null) filesServerConnection.close();
+    }
+
+    private void sendFile(File file) throws Exception{
+        log("Starting sending file:" + file.getName());
         try {
-            if (frameService != null)
-                serverConnection = new ServerConnection(host, port, frameService.getFileName());
+            if (framesServerConnection != null) {
+                filesServerConnection.writeFile(file);
+                log("File was sent successfully");
+            }
+            else log("Server connection is closed");
+        }
+        catch (FileTooBigException e){
+            handleException(e);
+        }
+    }
+
+    private ServerConnection initServerConnection() {
+        ServerConnection serverConnection = null;
+        String host = hostEditText.getText().toString();
+        int port = Integer.parseInt(portEditText.getText().toString());
+        try {
+            serverConnection = new ServerConnection(host, port, frameService.getFileName());
         }catch (Exception e){
             handleException(e);
         }
+        return serverConnection;
     }
 
     private void disableStrictPolicy() {
@@ -92,24 +120,41 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         try{
-            serverConnection.close();
+            if(framesServerConnection!=null) framesServerConnection.close();
+            if(filesServerConnection!=null) filesServerConnection.close();
         }
         catch(Exception e){
             handleException(e);
         }
     }
 
-    private void createFrameService() {
+    private boolean createFrameService() {
+        boolean result = false;
         try {
             List<File> files = getFiles();
             if(files.size() < 1) throw new Exception("no valid found in oldest folder in: "+ MAIN_DIR_PATH);
-            frameService = dispatchService(files.get(0));
-            if(files.size() > 1) frameService2 = dispatchService(files.get(1));
+            if(files.size() == 1) frameService = dispatchService(files.get(0));
+            if(files.size() > 1) createFrameServices(files.get(0), files.get(1));
+            result = true;
+            startRepeatingTask();
         }
         catch(Exception e){
             handleException(e);
         }
-        startRepeatingTask();
+        return result;
+    }
+
+    private void createFrameServices(File file, File file2) throws Exception{
+        if(FileHelper.getExtension(file).equals("MJPEG")) {
+            frameService = dispatchService(file);
+            frameService2 = dispatchService(file2);
+            log("Frame services created successfully");
+        }
+        else{
+            frameService = dispatchService(file2);
+            frameService2 = dispatchService(file);
+            log("Frame services created successfully");
+        }
     }
 
     private FrameService dispatchService(File file) throws Exception{
@@ -125,15 +170,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendFrameFromService() throws Exception{
-        if(serverConnection != null) {
+        if(framesServerConnection != null) {
             if (frameService != null) {
-                serverConnection.writeFrame(frameService.getFrameBytes());
+                framesServerConnection.writeFrame(frameService.getFrameBytes());
                 log("frame was sent from frame service 1");
             }
-            if (frameService2 != null){
-                serverConnection.writeFrame(frameService2.getFrameBytes());
-                log("frame was sent from frame service 2");
-            }
+//            if (frameService2 != null){
+//                framesServerConnection.writeFrame(frameService2.getFrameBytes());
+//                log("frame was sent from frame service 2");
+//            }
         }
     }
 

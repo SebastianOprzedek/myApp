@@ -20,7 +20,6 @@ public class ServerConnection {
     public ServerConnection(String host, int port, String name) throws Exception {
         establish(host, port);
         setName(name);
-        //writeFile(new File("/storage/emulated/0/eye/aa.avi"));
     }
 
     public void establish(String host, int port) throws Exception {
@@ -52,6 +51,7 @@ public class ServerConnection {
     }
 
     public void writeFile(File file) throws Exception{
+        setName(file.getName());
         byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.fileToByteArray(file), 10000);
         writeMessage(Dictionary.FILE_HEADER);
         writeInt(batchedBytes.length);

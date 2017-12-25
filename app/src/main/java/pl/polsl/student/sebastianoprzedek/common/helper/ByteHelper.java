@@ -10,12 +10,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import pl.polsl.student.sebastianoprzedek.common.helper.exceptions.FileTooBigException;
+
 /**
  * Created by sebas on 13.12.2017.
  */
 
 public class ByteHelper {
-    public static final int MAX_FILE_SIZE = 999999999;
+    public static final int MAX_FILE_SIZE = 99999999;
     public static List<Byte> byteArrayToList(byte[] bytes){
         List<Byte> byteList = new ArrayList<>();
         for(int i=0; i<bytes.length; i++){
@@ -78,7 +80,7 @@ public class ByteHelper {
 
     public static byte[] fileToByteArray(File file) throws Exception {
         if (file.length() > MAX_FILE_SIZE) {
-            throw new Exception("File too big: " + file.getName());
+            throw new FileTooBigException(file.getName());
         }
         ByteArrayOutputStream ous = null;
         InputStream ios = null;
