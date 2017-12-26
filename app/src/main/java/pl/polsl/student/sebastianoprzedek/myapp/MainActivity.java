@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createFrameServices(File file, File file2) throws Exception{
-        if(FileHelper.getExtension(file).equals("MJPEG")) {
+        if(!FileHelper.getExtension(file).equals("MJPEG")) {
             frameService = dispatchService(file);
             frameService2 = dispatchService(file2);
             log("Frame services created successfully");
