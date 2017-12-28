@@ -33,6 +33,13 @@ public class ByteHelper {
         return true;
     }
 
+    public static byte[] reverse(byte[] bytes){
+        byte[] reversedBytes = new byte[bytes.length];
+        for(int i=1; i<=bytes.length; i++)
+            reversedBytes[i-1] = bytes[bytes.length-i];
+        return reversedBytes;
+    }
+
     public static byte[] intToByteArray(int value) {
         return new byte[] {
                 (byte)(value >>> 24),

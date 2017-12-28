@@ -9,8 +9,10 @@ import java.io.IOException;
 
 public interface FrameService {
 
-    public Bitmap getFrame() throws Exception;
-    public byte[] getFrameBytes() throws Exception;
+    public Bitmap getNextFrame() throws Exception;
+    public Bitmap getLastFrame() throws Exception;
+    public byte[] getNextFrameBytes() throws Exception;
+    public byte[] getLastFrameBytes() throws Exception;
     public void closeService() throws IOException;
     public String getFileName();
 }

@@ -26,12 +26,20 @@ public class MP4FrameService implements FrameService {
         g.stop();
     }
 
-    public byte[] getFrameBytes() throws Exception{
-        return ByteHelper.bitmapToByteArray(getFrame());
+    public byte[] getNextFrameBytes() throws Exception{
+        return ByteHelper.bitmapToByteArray(getNextFrame());
     }
 
-    public Bitmap getFrame() throws Exception{
+    public Bitmap getNextFrame() throws Exception{
         return new AndroidFrameConverter().convert(g.grabImage());
+    }
+
+    public byte[] getLastFrameBytes() throws Exception{
+        return null;
+    }
+
+    public Bitmap getLastFrame() throws Exception{
+        return null;
     }
 
     public String getFileName(){

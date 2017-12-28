@@ -27,15 +27,23 @@ public class VideoCaptureService implements FrameService {
         videoCapture.close();
     }
 
-    public Bitmap getFrame() throws Exception{
+    public Bitmap getNextFrame() throws Exception{
         opencv_core.Mat image = new opencv_core.Mat();
         videoCapture.read(image);
         Frame frame = new OpenCVFrameConverter.ToMat().convert(image);
         return new AndroidFrameConverter().convert(frame);
     }
 
-    public byte[] getFrameBytes() throws Exception{
-        return ByteHelper.bitmapToByteArray(getFrame());
+    public byte[] getNextFrameBytes() throws Exception{
+        return ByteHelper.bitmapToByteArray(getNextFrame());
+    }
+
+    public byte[] getLastFrameBytes() throws Exception{
+        return null;
+    }
+
+    public Bitmap getLastFrame() throws Exception{
+        return null;
     }
 
     public String getFileName(){

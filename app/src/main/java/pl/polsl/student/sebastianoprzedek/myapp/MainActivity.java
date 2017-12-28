@@ -168,8 +168,12 @@ public class MainActivity extends AppCompatActivity {
     private void sendFrameFromService() throws Exception{
         if(framesServerConnection != null) {
             if (frameService != null) {
-                framesServerConnection.writeFrame(frameService.getFrameBytes());
-                log("frame was sent from frame service 1");
+                byte[] bytes = frameService.getLastFrameBytes();
+                if(bytes== null) frameService.getNextFrameBytes(); // if last is not implemented
+                if(bytes!= null){
+                    framesServerConnection.writeFrame(bytes);
+                    log("frame was sent from frame service 1");
+                }
             }
         }
     }
