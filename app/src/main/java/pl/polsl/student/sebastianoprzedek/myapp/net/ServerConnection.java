@@ -22,7 +22,7 @@ public class ServerConnection {
         setName(name);
     }
 
-    public void establish(String host, int port) throws Exception {
+    private void establish(String host, int port) throws Exception {
         socket = new Socket(host, port);
         in = new BufferedInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
@@ -69,7 +69,7 @@ public class ServerConnection {
         waitForConfirmation();
     }
 
-    public void waitForConfirmation() throws Exception{
+    private void waitForConfirmation() throws Exception{
         byte[] bytes = readMessage();
         if(!ByteHelper.equal(bytes, Dictionary.CONFIRM)) {
             socket.close();

@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String DEFAULT_HOST = "192.168.1.68";
     public static final String DEFAULT_PORT = "4444";
     FrameService frameService;
-    FrameService frameService2;
     ServerConnection framesServerConnection;
     ServerConnection filesServerConnection;
     EditText hostEditText;
@@ -67,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
                 startButton.setText("START");
                 if (framesServerConnection != null) framesServerConnection.close();
                 if (frameService != null) frameService.closeService();
-                if (frameService2 != null) frameService2.closeService();
                 sendFiles();
             }
         }
@@ -145,14 +143,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createFrameServices(File file, File file2) throws Exception{
-        if(!FileHelper.getExtension(file).equals("MJPEG")) {
+        if(FileHelper.getExtension(file).equals("MJPEG")) {
             frameService = dispatchService(file);
-            frameService2 = dispatchService(file2);
             log("Frame services created successfully");
         }
         else{
             frameService = dispatchService(file2);
-            frameService2 = dispatchService(file);
             log("Frame services created successfully");
         }
     }
@@ -175,10 +171,6 @@ public class MainActivity extends AppCompatActivity {
                 framesServerConnection.writeFrame(frameService.getFrameBytes());
                 log("frame was sent from frame service 1");
             }
-//            if (frameService2 != null){
-//                framesServerConnection.writeFrame(frameService2.getFrameBytes());
-//                log("frame was sent from frame service 2");
-//            }
         }
     }
 

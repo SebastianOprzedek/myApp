@@ -78,6 +78,16 @@ public class ByteHelper {
         return ret;
     }
 
+    public static byte[] mergeBatches(int batchSize, int numberOfBatches, byte[][] batchedBytes){
+        int totalSize = 0;
+        for (byte[] batchedByte1 : batchedBytes) totalSize += batchedByte1.length;
+        byte[] bytes = new byte[totalSize];
+        for(int i=0; i<numberOfBatches-1; i++)
+            System.arraycopy(batchedBytes[i], 0, bytes, i * batchSize, batchSize);
+        System.arraycopy(batchedBytes[numberOfBatches - 1], 0, bytes, (numberOfBatches - 1) * batchSize, batchedBytes[numberOfBatches - 1].length);
+        return bytes;
+    }
+
     public static byte[] fileToByteArray(File file) throws Exception {
         if (file.length() > MAX_FILE_SIZE) {
             throw new FileTooBigException(file.getName());
