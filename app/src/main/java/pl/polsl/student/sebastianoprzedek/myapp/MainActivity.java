@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createFrameServices(File file, File file2) throws Exception{
-        if(FileHelper.getExtension(file).equals("MJPEG")) {
+        if(file.getName().contains("Integrated")) {
             frameService = dispatchService(file);
             log("Frame services created successfully");
         }
