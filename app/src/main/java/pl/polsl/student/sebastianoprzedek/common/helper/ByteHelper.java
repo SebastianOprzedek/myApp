@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import pl.polsl.student.sebastianoprzedek.common.helper.exceptions.FileTooBigException;
 
 /**
@@ -24,6 +23,13 @@ public class ByteHelper {
             byteList.add(bytes[i]);
         }
         return byteList;
+    }
+
+    public static byte[] byteListToArray(List<Byte> byteList){
+        byte[] bytes = new byte[byteList.size()];
+        for(int i=0; i<bytes.length; i++)
+            bytes[i] = byteList.get(i);
+        return bytes;
     }
 
     public static Boolean equal(byte[] bytes1, byte[] bytes2){
@@ -96,9 +102,9 @@ public class ByteHelper {
     }
 
     public static byte[] fileToByteArray(File file) throws Exception {
-        if (file.length() > MAX_FILE_SIZE) {
-            throw new FileTooBigException(file.getName());
-        }
+//        if (file.length() > MAX_FILE_SIZE) {
+//            throw new FileTooBigException(file.getName());
+//        }
         ByteArrayOutputStream ous = null;
         InputStream ios = null;
         try {
@@ -124,4 +130,20 @@ public class ByteHelper {
         }
         return ous.toByteArray();
     }
+
+    public static byte[] cutArrayToLength(byte[] buffer, int length) {
+        if (buffer.length == length) return buffer;
+        else {
+            byte[] bytes = new byte[length];
+            System.arraycopy(buffer, 0, bytes, 0, length);
+            if (buffer.length > length)
+                return bytes;
+            else{
+                for(int i = buffer.length; i < length; i++)
+                    bytes[i] = (byte) 0;
+                return bytes;
+            }
+        }
+    }
+
 }

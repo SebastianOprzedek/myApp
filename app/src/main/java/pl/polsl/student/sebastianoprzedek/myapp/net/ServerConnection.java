@@ -3,7 +3,9 @@ package pl.polsl.student.sebastianoprzedek.myapp.net;
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import pl.polsl.student.sebastianoprzedek.common.helper.ByteHelper;
 
@@ -52,10 +54,26 @@ public class ServerConnection {
 
     public void writeFile(File file) throws Exception{
         setName(file.getName());
-        byte[][] batchedBytes = ByteHelper.splitToBatches(ByteHelper.fileToByteArray(file), 10000);
         writeMessage(Dictionary.FILE_HEADER);
-        writeInt(batchedBytes.length);
-        for (byte[] batchedByte : batchedBytes) writeByteArray(batchedByte);
+        InputStream ios = null;
+        try {
+            byte[] buffer = new byte[4096];
+            ios = new FileInputStream(file);
+            int read = 0;
+            while (true){
+                read = ios.read(buffer);
+                if(read == -1) break;
+                writeByteArray(ByteHelper.cutArrayToLength(buffer, read));
+                int a = 10;
+            }
+        }finally {
+            writeInt(0);
+            try {
+                if (ios != null)
+                    ios.close();
+            } catch (IOException e) {}
+        }
+        setName(file.getName());
     }
 
     private void writeByteArray(byte[] bytes) throws Exception{
